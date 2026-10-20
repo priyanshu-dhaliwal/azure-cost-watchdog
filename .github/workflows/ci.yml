@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: Gate & schedule tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install pytest tzdata
+      - name: Test
+        run: python -m pytest tests -q --maxfail=1
+      - name: Coverage summary of the gates module
+        run: |
+          pip install coverage
+          coverage run -m pytest tests -q
+          coverage report --include="*/gates.py,*/schedule.py" --fail-under=90
+
+  bicep:
+    name: Bicep build & lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          curl -sLo bicep https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64
+          chmod +x bicep && sudo mv bicep /usr/local/bin/
+          bicep build infra/main.bicep --stdout > /dev/null
+          bicep lint infra/main.bicep
+
+  bindings:
+    name: Function bindings valid
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          python - <<'EOF'
+          import json, pathlib, sys
+          bad = []
+          for p in pathlib.Path('src/functions').rglob('function.json'):
+              try:
+                  cfg = json.loads(p.read_text())
+                  assert cfg.get("bindings"), "no bindings"
+                  assert cfg.get("scriptFile"), "no scriptFile"
+              except Exception as exc:
+                  bad.append(f"{p}: {exc}")
+          for b in bad:
+              print(b, file=sys.stderr)
+          sys.exit(1 if bad else 0)
+          EOF
+
+  scripts:
+    name: Scripts compile
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python -m py_compile scripts/dry-run.py scripts/savings-report.py
+      - run: shellcheck scripts/*.sh || true

@@ -1,0 +1,19 @@
+{
+  "scriptFile": "__init__.py",
+  "bindings": [
+    {
+      "name": "timer",
+      "type": "timerTrigger",
+      "direction": "in",
+      "schedule": "0 5 * * * *",
+      "runOnStartup": false
+    },
+    {
+      "name": "message",
+      "type": "queue",
+      "direction": "out",
+      "queueName": "%ALERT_QUEUE%",
+      "connection": "AzureWebJobsStorage"
+    }
+  ]
+}

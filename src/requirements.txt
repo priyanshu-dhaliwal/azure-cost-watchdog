@@ -1,0 +1,8 @@
+azure-functions>=1.19.0
+azure-identity>=1.19.0
+azure-cosmos>=4.8.0
+azure-mgmt-resourcegraph>=8.0.0
+azure-mgmt-subscription>=3.1.1
+azure-mgmt-costmanagement>=4.0.1
+aiohttp>=3.10.0
+tzdata>=2024.1

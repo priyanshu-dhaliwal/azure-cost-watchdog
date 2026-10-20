@@ -1,0 +1,16 @@
+local.settings.json
+*.env
+.env
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+.azurefunctions/
+infra/main.json
+*.zip
+.coverage
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
